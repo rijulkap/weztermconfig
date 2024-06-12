@@ -17,7 +17,7 @@ end
 
 config.color_scheme = "Tokyo Night"
 config.font = wezterm.font_with_fallback({
-	{ family = "JetBrainsMono Nerd Font", scale = 1.2, weight = "Regular" },
+	{ family = "JetBrainsMono Nerd Font", scale = 1.0, weight = "Regular" },
 })
 config.window_background_opacity = 0.98
 -- config.window_decorations = "RESIZE"
