@@ -19,7 +19,7 @@ config.color_scheme = "Tokyo Night"
 config.font = wezterm.font_with_fallback({
 	{ family = "JetBrainsMono Nerd Font", scale = 1.0, weight = "Regular" },
 })
-config.window_background_opacity = 0.98
+config.window_background_opacity = 0.95
 -- config.window_decorations = "RESIZE"
 config.window_close_confirmation = "AlwaysPrompt"
 config.scrollback_lines = 3000
@@ -140,27 +140,33 @@ wezterm.on("update-status", function(window, pane)
 		return string.gsub(s, "(.*[/\\])(.*)", "%2")
 	end
 
+	local reduce_filepath = function(filepath)
+		-- Split the file path into its components
+		local parts = {}
+		for part in string.gmatch(filepath, "[^/\\]+") do
+			table.insert(parts, part)
+		end
+
+		-- Check if the path has more than 3 parts (2 parents + 1 file/folder)
+		if #parts > 3 then
+			-- Keep only the last 3 parts and add double dots before the outermost folder
+			parts = { "..", parts[#parts - 2], parts[#parts - 1], parts[#parts] }
+		end
+
+		-- Reconstruct the reduced file path
+		return table.concat(parts, "/")
+	end
+
 	-- Current working directory
 	local cwd = pane:get_current_working_dir()
-	if cwd then
-		if type(cwd) == "userdata" then
-			-- Wezterm introduced the URL object in 20240127-113634-bbcac864
-			cwd = basename(cwd.file_path)
-		else
-			-- 20230712-072601-f4abf8fd or earlier version
-			cwd = basename(cwd)
-		end
-	else
-		cwd = ""
-	end
+	cwd = cwd and reduce_filepath(cwd.file_path)
 
 	-- Current command
 	local cmd = pane:get_foreground_process_name()
-	-- CWD and CMD could be nil (e.g. viewing log using Ctrl-Alt-l)
 	cmd = cmd and basename(cmd) or ""
 
 	-- Time
-	local time = wezterm.strftime("%H:%M")
+	local time = wezterm.strftime("%H:%M:%S")
 
 	-- Left status (left of the tab line)
 	window:set_left_status(wezterm.format({
